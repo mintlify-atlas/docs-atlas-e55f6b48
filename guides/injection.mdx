@@ -1,0 +1,59 @@
+---
+title: "Injecting scripts into Roblox"
+description: "Learn how LInjector attaches to a running Roblox process and executes your Luau scripts, with injection times averaging around 300 milliseconds."
+---
+
+Injection is the process by which LInjector attaches to a running Roblox process and loads the execution environment that lets your Luau scripts run inside the game. Once injected, LInjector can send scripts to the Roblox client and execute them with elevated privileges beyond what normal Roblox scripts have access to. The injection step happens once per game session; after that, you can execute as many scripts as you like without re-injecting until you leave the game or Roblox closes.
+
+## Current status
+
+<Note>
+The UWP (Windows Store) version of Roblox is currently patched due to the introduction of Hyperion (also known as Byfron), Roblox's anti-cheat system. LInjector's injection method does not work against Hyperion-protected builds. The **PC (desktop installer) version of Roblox** remains the supported target. If you have a working custom DLL that bypasses the current protection, you can integrate it by editing the LInjector source code.
+</Note>
+
+LInjector injects using a custom Dynamic-Link Library (DLL). The DLL is loaded into the Roblox process at runtime. Because antivirus software is not always able to distinguish between a legitimate DLL injector and malware, false-positive detections are common for all executors, including LInjector.
+
+<Warning>
+Your antivirus software may flag LInjector or its DLL as malware. This is a **false positive** that affects virtually all Roblox executors, not just LInjector. LInjector is an open-source project, meaning you can inspect every line of its source code. If you choose to proceed, you may need to add an exclusion for the LInjector directory in your antivirus settings.
+</Warning>
+
+## Injection speed
+
+LInjector's injection time averages approximately **300 milliseconds (0.3 seconds)**. Compared to many other Roblox executors that can take several seconds to inject, this is a meaningful difference in day-to-day use — especially when testing scripts that require quick iteration across multiple game joins.
+
+## How to inject
+
+<Steps>
+  <Step title="Launch Roblox">
+    Open Roblox using the **PC desktop installer** (not the Windows Store/UWP version). Log in and join a game. Wait for the game to fully load before proceeding.
+  </Step>
+  <Step title="Open LInjector">
+    Launch LInjector. Depending on your DLL and system configuration, you may need to run it as administrator for the injection to succeed.
+  </Step>
+  <Step title="Verify Roblox is running">
+    LInjector will detect the active Roblox process. If Roblox is not running or has not finished loading, the injection will fail. Ensure you are fully inside a game — on the loading screen is not sufficient.
+  </Step>
+  <Step title="Click Inject">
+    Click the **Inject** button in LInjector. The injection completes in approximately 300 ms. A status indicator in LInjector will confirm that injection succeeded.
+  </Step>
+  <Step title="Execute your scripts">
+    Once injected, write or load a script in the editor and click **Execute**. Your script will run inside the Roblox game immediately.
+  </Step>
+</Steps>
+
+## What can go wrong
+
+<AccordionGroup>
+  <Accordion title="Antivirus blocks the DLL or LInjector itself">
+    This is the most common issue. Your antivirus may quarantine LInjector's executable or DLL before injection can occur. Add an exclusion for LInjector's folder in your antivirus settings, or temporarily disable real-time protection while injecting. Because LInjector is open-source, you can audit the code yourself to confirm there is no actual malware.
+  </Accordion>
+  <Accordion title="Roblox is not detected">
+    LInjector looks for the Roblox process by name. If you launched Roblox via the Windows Store (UWP), LInjector will not be able to inject due to Hyperion. Make sure you are using the PC desktop installer. Also ensure that Roblox has fully loaded into a game — not just the launcher or the loading screen.
+  </Accordion>
+  <Accordion title="Wrong or missing DLL">
+    If the DLL file that LInjector depends on is missing, moved, or incompatible with the current version of Roblox, injection will fail. Verify that the DLL is present in the expected directory relative to LInjector's executable. If you are building from source, you need to supply a working DLL separately.
+  </Accordion>
+  <Accordion title="Injection succeeds but scripts do not run">
+    If injection reports success but executed scripts produce no output or effect, the DLL may be outdated or incompatible with the current Roblox client version. Roblox updates frequently and can break executor DLLs between updates.
+  </Accordion>
+</AccordionGroup>

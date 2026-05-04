@@ -1,133 +1,59 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
-icon: 'star'
+title: "LInjector: Open-Source Luau Script IDE for Roblox"
+description: "LInjector is an open-source Luau Script IDE for Roblox, built in C# with Monaco editor integration, ~300ms injection speed, and a fully auditable codebase."
 ---
 
-## Setting up
+LInjector is a minimal, open-source Luau Script IDE designed for developers who want full transparency and control over their Roblox scripting environment. Built with C# and .NET Framework 4.8, it features the Monaco editor (the same engine that powers Visual Studio Code), a memory-optimized tab system, and a clean architecture that makes it easy to fork and customize with your own DLL.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Introduction" icon="book-open" href="/introduction">
+    Learn what LInjector is, why it was built, and how it compares to other executors.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Download LInjector and run your first Luau script in minutes.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Build from Source" icon="hammer" href="/building-from-source">
+    Clone the repo, open in Visual Studio 2022, and compile your own release build.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="DLL Integration" icon="plug" href="/development/dll-integration">
+    Bring your own injection DLL and wire it into LInjector's architecture.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## Why LInjector?
 
-Everything you need to create world-class documentation.
+<CardGroup cols={2}>
+  <Card title="Monaco Editor" icon="code" href="/guides/editor">
+    Full VS Code-grade editing with Luau syntax highlighting, autocomplete, and theming.
+  </Card>
+  <Card title="Optimized Tab System" icon="table-columns" href="/guides/tabs">
+    Open 40+ script tabs while staying under 1 GB of RAM usage.
+  </Card>
+  <Card title="Fast Injection" icon="bolt" href="/guides/injection">
+    Injection times averaging ~300ms — faster than most comparable executors.
+  </Card>
+  <Card title="Open Source" icon="lock-open" href="/introduction">
+    MIT-licensed and fully transparent. Audit the code, fork it, or contribute.
+  </Card>
+</CardGroup>
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+## Get started
 
-## Make your content agent ready
+<Steps>
+  <Step title="Download or clone LInjector">
+    Get the source from [GitHub](https://github.com/WeritoP/LInjector-FORKED-) or download a pre-built release.
+  </Step>
+  <Step title="Open in Visual Studio 2022">
+    Open `LInjector.sln`, set the build target to **Release x86**, and build the solution with `Ctrl+Shift+B`.
+  </Step>
+  <Step title="Provide a compatible DLL">
+    LInjector requires a working injection DLL for your target game. See [DLL Integration](/development/dll-integration) for details.
+  </Step>
+  <Step title="Write and execute Luau scripts">
+    Launch LInjector, open the Monaco editor, write your script, and click **Execute**.
+  </Step>
+</Steps>
 
-Make your docs work for humans and AI agents alike.
-
-<Columns cols={2}>
-  <Card
-    title="Prompt component"
-    icon="robot"
-    href="/agent-ready/prompt"
-  >
-    Embed shareable AI prompts readers can copy or open in Cursor.
-  </Card>
-  <Card
-    title="Visibility"
-    icon="eye"
-    href="/agent-ready/visibility"
-  >
-    Show different content to humans and agents reading your docs.
-  </Card>
-  <Card
-    title="Contextual menu"
-    icon="bolt"
-    href="/agent-ready/contextual"
-  >
-    Give readers one-click access to Claude, ChatGPT, Cursor, and more.
-  </Card>
-  <Card
-    title="AI coding tools"
-    icon="wand-magic-sparkles"
-    href="/ai-tools/claude-code"
-  >
-    Set up Claude Code, Cursor, or Windsurf with Mintlify's skill.
-  </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<Note>
+  The UWP version of Roblox is currently patched due to Hyperion/Byfron. LInjector continues to work — see [FAQ](/reference/faq) for the current status and alternatives.
+</Note>

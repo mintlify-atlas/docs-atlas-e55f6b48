@@ -1,0 +1,157 @@
+---
+title: "Customizing the LInjector UI"
+description: "Modify LInjector's Windows Forms interface — change colors, layouts, controls, and branding — by editing the C# source in Visual Studio 2022."
+---
+
+LInjector is intentionally minimal: a small number of controls, a flat layout, and no third-party UI framework sitting between you and the Windows Forms designer. That simplicity is a feature — it means you can open the designer, click a control, change a property, and see the result immediately. This page walks through what you can change, how to use the designer safely, and how to make common modifications to the application's appearance and behavior.
+
+## What you need
+
+- **Visual Studio 2022** with the **.NET desktop development** workload
+- **.NET Framework 4.8** (included in that workload)
+- A successful **Release x86** build before opening any form in the designer
+
+<Warning>
+  You must build the solution before opening any Windows Form in the Visual Studio designer. The designer depends on compiled output to load controls and their properties correctly. If you open a form before building, Visual Studio will display errors or blank forms. If this happens, close Visual Studio entirely, reopen it, run **Build → Build Solution** first, and then open the form.
+</Warning>
+
+## Build first, then edit workflow
+
+<Steps>
+  <Step title="Clone and open the solution">
+    Clone the repository and open `LInjector.sln` in Visual Studio 2022. Do not open any `.cs` form files yet.
+
+    ```bash
+    git clone https://github.com/WeritoP/LInjector-FORKED-.git
+    ```
+  </Step>
+  <Step title="Set the build target">
+    In the Visual Studio toolbar, set the configuration to **Release** and the platform to **x86**.
+  </Step>
+  <Step title="Build the solution">
+    Press `Ctrl+Shift+B` or go to **Build → Build Solution**. Wait for the build to complete successfully:
+
+    ```text
+    ========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
+    ```
+  </Step>
+  <Step title="Open the form in the designer">
+    In **Solution Explorer**, double-click the form file you want to edit (for example, `MainForm.cs`). Visual Studio opens the WinForms designer. You can now click controls, edit properties in the **Properties** panel, and drag controls around the canvas.
+  </Step>
+  <Step title="Edit and rebuild">
+    Make your changes, then press `Ctrl+Shift+B` again to rebuild and verify the changes compile cleanly. Run the output binary from `bin\Release\LInjector.exe` to test.
+  </Step>
+</Steps>
+
+## What you can customize
+
+<CardGroup cols={2}>
+  <Card title="Colors and theme" icon="palette">
+    Background colors, foreground colors, button hover states, border colors — all set via control `BackColor` and `ForeColor` properties.
+  </Card>
+  <Card title="Layout and sizing" icon="layout-panel-top">
+    Control positions, panel sizes, splitter ratios, and window minimum size via the designer or in the form constructor.
+  </Card>
+  <Card title="Title and branding" icon="type">
+    The window title bar text, the application name shown in the taskbar, and the About dialog content.
+  </Card>
+  <Card title="Icons" icon="image">
+    The `.ico` file used for the taskbar, title bar, and `Alt+Tab` switcher.
+  </Card>
+</CardGroup>
+
+## Changing colors
+
+Every WinForms control exposes `BackColor` and `ForeColor` properties. You can set them in the designer or in code. To change the main window background:
+
+1. Click the form canvas (not a control on it) in the designer.
+2. In the **Properties** panel, find **BackColor**.
+3. Click the dropdown and choose a color from the palette, or enter a hex value.
+
+To set colors programmatically in the form constructor:
+
+```csharp
+public MainForm()
+{
+    InitializeComponent();
+
+    // Dark background, light text.
+    this.BackColor = ColorTranslator.FromHtml("#1A1A2E");
+    this.ForeColor = ColorTranslator.FromHtml("#D4D4D4");
+
+    // Style a specific button.
+    injectButton.BackColor = ColorTranslator.FromHtml("#5B6CF6");
+    injectButton.ForeColor = Color.White;
+    injectButton.FlatStyle = FlatStyle.Flat;
+    injectButton.FlatAppearance.BorderSize = 0;
+}
+```
+
+## Changing the window title and branding
+
+The window title is the `Text` property of the main form. Change it in the designer's **Properties** panel or in code:
+
+```csharp
+this.Text = "MyExecutor — powered by LInjector";
+```
+
+To change the name that appears in the taskbar and `Alt+Tab` switcher, update the same `Text` property. The taskbar label always reflects the main form's `Text`.
+
+## Changing the application icon
+
+The application icon is the `.ico` file referenced in the project properties.
+
+<Steps>
+  <Step title="Prepare your icon">
+    Create or obtain an `.ico` file. For best results, include sizes 16×16, 32×32, and 48×48 in the same `.ico` file.
+  </Step>
+  <Step title="Add the icon to the project">
+    In **Solution Explorer**, right-click the project → **Add → Existing Item**, and select your `.ico` file. Set its **Build Action** to **Resource** in the **Properties** panel.
+  </Step>
+  <Step title="Set it as the application icon">
+    Right-click the project in **Solution Explorer** → **Properties** → **Application** tab. Under **Icon**, click the browse button and select your `.ico` file.
+  </Step>
+  <Step title="Set it on the main form">
+    In the main form designer, click the form canvas, find the **Icon** property in the **Properties** panel, and select the same `.ico` file. This controls the title bar icon.
+  </Step>
+</Steps>
+
+## Adding and removing controls
+
+To add a control in the designer:
+
+1. Open the **Toolbox** panel (`Ctrl+Alt+X`).
+2. Drag the control you want (for example, a `Button` or `Panel`) onto the form canvas.
+3. Set its properties — name, text, size, color — in the **Properties** panel.
+4. Wire up event handlers by double-clicking the control in the designer, which creates a `_Click` handler in the `.cs` file.
+
+To remove a control, select it in the designer and press `Delete`. Visual Studio removes it from the `.Designer.cs` file automatically.
+
+<Note>
+  The source code is uncommented — inline comments explaining what individual methods do are sparse. If you are unsure what a particular method or event handler is responsible for, the LInjector author is available on Discord for questions. Do not guess and delete code that might be load-bearing for the injection or tab system.
+</Note>
+
+## Editing the layout with panels and splitters
+
+LInjector uses nested `Panel` controls to divide the window into regions (editor area, toolbar, status bar). To change the proportions:
+
+- Select a panel in the designer.
+- Drag its edges to resize it, or set the **Size** and **Location** properties numerically in the **Properties** panel.
+- If the panel uses a `Dock` or `Anchor` property to resize with the window, update those values to preserve responsive behavior after resizing the window.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Monaco editor" icon="code" href="/development/monaco-editor">
+    Customize the editor theme, font, completions, and syntax highlighting.
+  </Card>
+  <Card title="DLL integration" icon="plug" href="/development/dll-integration">
+    Connect your own injection DLL to complete a fully custom build.
+  </Card>
+  <Card title="Architecture overview" icon="sitemap" href="/development/architecture">
+    Understand how the UI layer connects to the rest of LInjector.
+  </Card>
+  <Card title="Build from source" icon="hammer" href="/building-from-source">
+    Reference for the full build process and prerequisites.
+  </Card>
+</CardGroup>

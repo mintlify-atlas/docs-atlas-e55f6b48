@@ -1,81 +1,80 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
-icon: 'rocket'
+title: "Get started with LInjector"
+description: "Learn how to get LInjector running, connect your injection DLL, and execute your first Luau script in Roblox — covers both pre-built and source-build paths."
 ---
 
-## Get started in three steps
+LInjector is a Windows desktop application, so getting started requires a Windows machine and a compatible injection DLL for Roblox. This guide walks you through both the pre-built release path and the source-build path, then shows you how to write and execute your first Luau script.
 
-Get your documentation site running locally and make your first customization.
+## Prerequisites
 
-### Step 1: Set up your local environment
+Before you begin, make sure you have:
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+- **Windows** (LInjector is a Windows Forms application and does not run on macOS or Linux)
+- **A compatible injection DLL** for Roblox (LInjector provides the IDE shell; you supply the DLL that performs the actual injection)
+- **Visual Studio 2022** with the .NET desktop development workload — only required if you are building from source
 
-### Step 2: Deploy your changes
+## Two ways to get LInjector
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+You can either use a pre-built release binary or compile LInjector yourself from the GitHub source. Building from source is recommended if you want to modify the injection logic or customize the UI.
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+- **Pre-built release** — Download the latest release from [GitHub](https://github.com/WeritoP/LInjector-FORKED-) and run the executable directly. No compilation required.
+- **Build from source** — Clone the repository, open it in Visual Studio 2022, and compile a Release x86 build. See [Build from source](/building-from-source) for step-by-step instructions.
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+## Execute your first script
 
-### Step 3: Go live
+<Steps>
+  <Step title="Launch LInjector">
+    Run the LInjector executable. The application window opens with the Monaco editor in the center and a tab bar across the top.
+  </Step>
+  <Step title="Open a script tab">
+    A default tab is already open when LInjector starts. Click the **+** button in the tab bar to open additional tabs if you want to work with multiple scripts at once.
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+    <Tip>
+      The tab system is optimized to use less than 1 GB of RAM with 40 or more tabs open. You can keep an entire library of scripts open simultaneously without worrying about memory pressure.
+    </Tip>
+  </Step>
+  <Step title="Write or paste your Luau code">
+    Click inside the editor and write your script. The Monaco editor provides Luau syntax highlighting, so keywords, strings, and comments are color-coded as you type.
+
+    Here is a minimal script to confirm everything is working:
+
+    ```lua
+    print("Hello from LInjector!")
+    ```
+
+    You can also try a simple game modification to verify injection is working correctly:
+
+    ```lua
+    -- Walk speed modifier example
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+
+    humanoid.WalkSpeed = 50
+    print("Walk speed set to 50")
+    ```
+  </Step>
+  <Step title="Connect Roblox and inject">
+    Make sure Roblox is running and you are in a game session. LInjector needs an active Roblox process to attach to before you execute a script.
+  </Step>
+  <Step title="Click Execute">
+    Click the **Execute** button. LInjector attaches to the Roblox process using your configured DLL — typically in around 300 milliseconds — and runs the script in the game context.
+  </Step>
+</Steps>
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Build from source" icon="hammer" href="/building-from-source">
+    Compile your own release build and customize the injection logic.
+  </Card>
+  <Card title="DLL integration" icon="plug" href="/development/dll-integration">
+    Learn how to wire your injection DLL into LInjector's architecture.
+  </Card>
+  <Card title="Editor features" icon="code" href="/guides/editor">
+    Explore Monaco editor shortcuts, themes, and Luau autocomplete.
+  </Card>
+  <Card title="Tab system" icon="table-columns" href="/guides/tabs">
+    Manage multiple scripts efficiently with the optimized tab system.
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

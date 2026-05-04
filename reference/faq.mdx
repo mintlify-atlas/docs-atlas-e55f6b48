@@ -1,0 +1,64 @@
+---
+title: "LInjector frequently asked questions"
+description: "Answers to common questions about LInjector: current Roblox compatibility, build issues, DLL requirements, antivirus warnings, and contribution guidelines."
+---
+
+This page answers the questions that come up most often about LInjector — from current compatibility with Roblox in 2026, to build requirements, to how antivirus software handles executor tools. If your question is not answered here, the author is available on the Discord server linked in the project repository.
+
+<AccordionGroup>
+  <Accordion title="Is LInjector still working in 2026?">
+    Yes. LInjector itself is still functional as of 2026. The UWP (Universal Windows Platform) version of Roblox was patched when Roblox introduced the Hyperion/Byfron anti-cheat layer, which disrupted injection paths that previously worked against the UWP client. However, you can make LInjector work by modifying the source to target a compatible injection path and pairing it with a DLL that is compatible with the current Roblox build.
+
+    Because LInjector is fully open-source, you are not waiting on a closed-source maintainer to push an update. You have direct access to the injection logic and can adapt it yourself.
+  </Accordion>
+
+  <Accordion title="Why does my antivirus flag LInjector?">
+    Antivirus software commonly flags executor tools as suspicious or malicious regardless of their actual behavior. This is a well-known false positive pattern for any software that injects code into another process — the behavioral signature looks similar to certain malware techniques, so heuristic scanners trigger.
+
+    LInjector is MIT-licensed and every line of source code is publicly auditable on GitHub. You do not need to trust a vendor's word: you can read the source, compile it yourself, and run a binary you built. There are no hidden network calls, no telemetry, and no bundled executables. If your antivirus flags LInjector, you can add an exclusion for your compiled binary with confidence.
+  </Accordion>
+
+  <Accordion title="Do I need a DLL to use LInjector?">
+    Yes. LInjector provides the IDE and user interface layer: the Monaco editor, the tab system, the script management buttons, and the injection trigger. The actual code injection into the Roblox process is performed by an external DLL that you supply.
+
+    LInjector does not ship with a bundled injection DLL. You need to bring your own compatible DLL, then configure its path in the source code before building. See the [configuration reference](/reference/configuration) for how to set the DLL path.
+  </Accordion>
+
+  <Accordion title="Why can't I edit the forms without building first?">
+    Visual Studio's Windows Forms designer requires compiled type metadata to display form controls correctly. If you open a `.cs` form file in the designer before compiling the project, Visual Studio cannot resolve the custom control types and the designer either shows errors or renders incorrectly.
+
+    The fix is straightforward:
+
+    1. Open `LInjector.sln` in Visual Studio 2022.
+    2. Build the solution first using **Ctrl+Shift+B** (set to **Release x86**).
+    3. After a successful build, open the form files you want to edit in the designer.
+
+    If you already opened a form before compiling and the designer is in a broken state, close Visual Studio completely and reopen it after a clean build.
+  </Accordion>
+
+  <Accordion title="What .NET version is required?">
+    LInjector targets **.NET Framework 4.8** — the legacy Windows-only .NET Framework, not the cross-platform .NET Core or .NET 5/6/7/8 runtime. These are different products that happen to share a name.
+
+    Make sure you have the .NET Framework 4.8 developer pack installed alongside Visual Studio 2022. The **.NET desktop development** workload in the Visual Studio installer includes this. If you try to build against a .NET Core or .NET 5+ target, the project will fail because Windows Forms in the legacy .NET Framework is not directly compatible with the modern .NET runtime.
+  </Accordion>
+
+  <Accordion title="Is LInjector safe to use?">
+    LInjector is MIT-licensed and fully open-source. You can read every line of code in the repository before running anything. There are no bundled binaries, no obfuscated code, and no network telemetry in the source.
+
+    Antivirus warnings you may encounter are false positives — a common occurrence for any tool that injects into another process. The safest way to use LInjector is to clone the repository, audit the source yourself, and compile your own binary. That way you know exactly what you are running.
+
+    Note that using LInjector in a live Roblox game carries its own risks separate from software safety — see the [disclaimer](/reference/disclaimer) for the full terms.
+  </Accordion>
+
+  <Accordion title="How can I get help or ask questions?">
+    The primary support channel is the Discord server. A link to the Discord is available in the project README on GitHub. You can also open an issue on the GitHub repository for bug reports or feature requests.
+
+    For configuration and source code questions, the [configuration reference](/reference/configuration) covers the most common settings. The [build from source guide](/building-from-source) covers the compilation workflow step by step.
+  </Accordion>
+
+  <Accordion title="Can I contribute to LInjector?">
+    Yes. LInjector is MIT-licensed, which means you are free to fork the repository, make changes, and submit a pull request. There are no contributor license agreements or other formal requirements.
+
+    If you are contributing a significant change — such as a new feature or a refactor of the injection path — it is a good idea to open an issue or contact the author on Discord first to discuss the approach before investing time in the implementation.
+  </Accordion>
+</AccordionGroup>

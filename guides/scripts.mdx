@@ -1,0 +1,133 @@
+---
+title: "Writing and executing Luau scripts"
+description: "Write, load, and execute Luau scripts in LInjector's Monaco editor. Covers script basics, loading files from disk, and common Roblox scripting patterns."
+---
+
+Luau is Roblox's scripting language — a fork of Lua 5.1 extended with optional gradual type annotations, performance improvements, and Roblox-specific standard libraries. Every script you run through LInjector is a Luau script that executes inside the Roblox client after injection. Understanding how Luau works and how Roblox's object model is structured will let you write scripts that are reliable, readable, and easy to iterate on.
+
+## What is Luau?
+
+Luau (pronounced "loo-ow") is maintained by Roblox and diverges from standard Lua in a few ways that matter for executor scripting:
+
+- **Type annotations** — you can annotate variables with types like `local name: string = "Player"`, though annotations are optional and the language remains dynamically typed at runtime.
+- **Performance** — Luau's VM is faster than Lua 5.1's reference implementation for most workloads.
+- **Roblox globals** — inside the Roblox client, globals like `game`, `workspace`, `script`, and all DataModel services are available directly without importing.
+
+For executor purposes, the practical difference from standard Lua 5.1 is minimal. Most Lua 5.1 scripts run in Luau without modification.
+
+## Writing scripts vs. loading from a file
+
+You have two ways to get a script into LInjector before executing it:
+
+<Columns cols={2}>
+  <Card title="Write in the editor" icon="pen-to-square">
+    Type or paste your script directly into the Monaco editor. This is the fastest path for short scripts or quick tests. The editor persists your text for the duration of the session.
+  </Card>
+  <Card title="Load from disk" icon="folder-open">
+    Use **File → Open** to load a `.lua` or `.txt` script file from your computer into the active tab. The file's contents are loaded into the editor and you can edit them before executing.
+  </Card>
+</Columns>
+
+## How to execute a script
+
+<Steps>
+  <Step title="Inject into Roblox">
+    Before executing any script, you must inject LInjector into the running Roblox process. See the [injection guide](/guides/injection) for step-by-step instructions.
+  </Step>
+  <Step title="Write or load your script">
+    Type your Luau code into the Monaco editor, paste it with **Ctrl+V**, or open a file from disk using **File → Open**.
+  </Step>
+  <Step title="Click Execute">
+    Click the **Execute** button. LInjector sends the script to the injected Roblox process, which runs it immediately. There is no separate compile step — execution is instant.
+  </Step>
+</Steps>
+
+## Common Roblox Luau patterns
+
+### Accessing the local player
+
+The most frequently used entry point in any client-side script is `game.Players.LocalPlayer`. This gives you access to the player's character, backpack, and GUI objects.
+
+```lua
+local Players = game:GetService("Players")
+local localPlayer = Players.LocalPlayer
+local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+
+print("Playing as: " .. localPlayer.Name)
+```
+
+### Changing walk speed
+
+One of the simplest and most common executor scripts modifies the `WalkSpeed` property of the player's `Humanoid`.
+
+```lua
+local Players = game:GetService("Players")
+local character = Players.LocalPlayer.Character or Players.LocalPlayer.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+humanoid.WalkSpeed = 50  -- default is 16
+print("Walk speed set to " .. tostring(humanoid.WalkSpeed))
+```
+
+### Iterating over all players
+
+```lua
+local Players = game:GetService("Players")
+
+for _, player in ipairs(Players:GetPlayers()) do
+    print(player.Name .. " | UserId: " .. tostring(player.UserId))
+end
+```
+
+### Manipulating workspace objects
+
+```lua
+-- Make all parts in the workspace transparent
+for _, obj in ipairs(workspace:GetDescendants()) do
+    if obj:IsA("BasePart") then
+        obj.Transparency = 0.5
+    end
+end
+```
+
+## Saving and loading scripts from disk
+
+To save your current script:
+
+1. With the script open in the active tab, select **File → Save** (or **File → Save As** to choose a name and location).
+2. LInjector saves the file as a `.lua` text file that you can open in any text editor or reload in LInjector later.
+
+To load a saved script:
+
+1. Select **File → Open**.
+2. Navigate to your saved `.lua` or `.txt` file and confirm.
+3. The file's contents are loaded into the active tab, replacing its current content (or into a new tab depending on your version).
+
+<Tip>
+Test new scripts in a **private server** before running them in public games. Private servers give you a controlled environment where other players are not present, reducing the risk of unintended effects and giving you time to debug without interference.
+</Tip>
+
+## Script execution tips
+
+<AccordionGroup>
+  <Accordion title="Script runs but nothing happens">
+    Check that you are actually inside a game and fully loaded — not on the Roblox home screen or a loading screen. Also verify that injection succeeded before clicking **Execute**.
+  </Accordion>
+  <Accordion title="Errors appear after executing">
+    Read the error message carefully. Common causes include referencing a service or object that does not exist in the current game, using `LocalPlayer` in a context where the character has not loaded yet, or calling a deprecated Roblox API. Use `WaitForChild()` and defensive `if` checks to make scripts more robust.
+  </Accordion>
+  <Accordion title="Using pcall for error handling">
+    Wrap risky code in `pcall` to prevent an error in one part of a script from halting the rest:
+
+    ```lua
+    local success, err = pcall(function()
+        -- code that might error
+        workspace.SomePart.CFrame = CFrame.new(0, 100, 0)
+    end)
+
+    if not success then
+        warn("Script error: " .. tostring(err))
+    end
+    ```
+  </Accordion>
+</AccordionGroup>

@@ -1,0 +1,49 @@
+---
+title: "LInjector: Open-Source Lua Script Executor"
+description: "LInjector is a minimal, open-source Luau/Lua Script IDE for Roblox developers, offering Monaco editor integration, fast injection, and full source transparency."
+---
+
+LInjector is an open-source Luau/Lua Script IDE and executor built for Roblox developers who want a transparent, customizable scripting environment. Rather than being a black-box tool, LInjector exposes its full source under the MIT license so you can audit every line, fork the project, and adapt it to your own injection DLL. It is written in C# targeting .NET Framework 4.8 (32-bit) and uses a Windows Forms application shell around a Monaco editor — the same editor engine that powers Visual Studio Code.
+
+## What LInjector is
+
+LInjector gives you a desktop IDE for writing and executing Luau scripts inside Roblox. It is designed to be minimal and intentionally simple: no bloat, no hidden network calls, and no obfuscated binaries. If you have a working injection DLL, you can wire it into LInjector's source and have a fully functional executor you built and understand yourself.
+
+The project is described by its author as "a legitimate development tool" intended for development and utility purposes. See the [disclaimer](/reference/disclaimer) for the full terms.
+
+## Key differentiators
+
+**Monaco editor** — LInjector embeds the Monaco editor (developed for Krnl and adapted by Depso) with Luau syntax highlighting. You get the same editing experience as VS Code: multi-cursor support, find-and-replace, and a familiar keyboard shortcut set, all inside a desktop Windows app.
+
+**Fast injection** — LInjector's injection path averages approximately 300 milliseconds. That is a meaningful advantage over many comparable executors that can take several seconds to attach.
+
+**Optimized tab system** — The tab system is engineered to stay under 1 GB of RAM even with 40 or more script tabs open simultaneously. You can keep many scripts open at once without degrading system performance.
+
+**Open-source transparency** — Because the full source is available, you can verify that LInjector contains no malware or unexpected behavior. Every build you run is a build you compiled yourself from auditable code.
+
+<Note>
+  The UWP version of Roblox is currently patched due to the introduction of Hyperion/Byfron anti-cheat. LInjector itself is still working as of 2026 — you can modify the source to target a compatible injection path. See the [FAQ](/reference/faq) for current options.
+</Note>
+
+## Tech stack
+
+LInjector is a Windows desktop application with the following characteristics:
+
+- **Language**: C# (.NET Framework 4.8, 32-bit)
+- **UI framework**: Windows Forms
+- **Editor**: Monaco (the VS Code editor engine)
+- **License**: MIT
+
+## Where to go next
+
+<CardGroup cols={2}>
+  <Card title="Quick start" icon="rocket" href="/quickstart">
+    Download a release or build from source, then run your first Luau script.
+  </Card>
+  <Card title="Build from source" icon="hammer" href="/building-from-source">
+    Clone the repo, open in Visual Studio 2022, and compile a Release x86 build.
+  </Card>
+  <Card title="DLL integration" icon="plug" href="/development/dll-integration">
+    Bring your own injection DLL and wire it into LInjector's architecture.
+  </Card>
+</CardGroup>

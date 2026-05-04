@@ -1,0 +1,79 @@
+---
+title: "LInjector configuration reference"
+description: "Reference for configuring LInjector's editor settings, tab behavior, injection options, and build target — all controlled through the source code or UI."
+---
+
+LInjector has no external configuration file. Every setting — from the Monaco editor's theme to the path of your injection DLL — is controlled by editing the C# and JavaScript source code directly, then recompiling. This design keeps the project transparent and self-contained: there is nothing hidden in a registry key or an appdata folder. If you want to change behavior, you find the relevant source file, make the change, and build a new binary.
+
+## Build configuration
+
+When you compile LInjector, you must use the correct build target. Using the wrong platform or framework version will result in a binary that either fails to start or cannot attach to the Roblox process.
+
+| Setting | Value | Notes |
+|---|---|---|
+| **Build target** | Release x86 | Must match the 32-bit game process; do not use x64 or AnyCPU |
+| **Framework** | .NET Framework 4.8 | Legacy .NET Framework — not .NET 5, 6, 7, or 8 Core |
+| **Solution file** | `LInjector.sln` | Open this file in Visual Studio to load the project |
+| **IDE** | Visual Studio 2022 | Required; earlier versions may not support all project features |
+| **Build shortcut** | **Ctrl+Shift+B** | Builds the entire solution |
+
+To compile:
+
+1. Open `LInjector.sln` in Visual Studio 2022.
+2. Set the configuration dropdown to **Release** and the platform dropdown to **x86**.
+3. Press **Ctrl+Shift+B** to build.
+
+<Note>
+  Windows Forms designers in Visual Studio require the project to be compiled before you can open any `.cs` form file in the designer view. Always build first. If you opened a form before compiling, close Visual Studio completely and reopen it after a successful build.
+</Note>
+
+## Monaco editor configuration
+
+LInjector embeds the Monaco editor inside a WebBrowser control. Editor options are set in the Monaco initialization JavaScript that is loaded at startup. To change these settings, locate the Monaco setup script in the project source and modify the options object passed to `monaco.editor.create`.
+
+Common options you may want to adjust:
+
+| Option | Description | Example value |
+|---|---|---|
+| `theme` | Editor color theme | `"vs-dark"`, `"vs"`, `"hc-black"` |
+| `fontSize` | Editor font size in pixels | `14` |
+| `tabSize` | Number of spaces per tab | `4` |
+| `minimap.enabled` | Show or hide the minimap scrollbar | `false` |
+| `lineNumbers` | Line number display mode | `"on"`, `"off"`, `"relative"` |
+| `wordWrap` | Soft word wrap behavior | `"on"`, `"off"` |
+
+Below is a representative example of a Monaco initialization call. Your actual initialization code will be in the project source:
+
+```javascript
+monaco.editor.create(document.getElementById("container"), {
+  language: "luau",
+  theme: "vs-dark",
+  fontSize: 14,
+  tabSize: 4,
+  minimap: { enabled: false },
+  lineNumbers: "on",
+  wordWrap: "off"
+});
+```
+
+Rebuild the project after changing this file for the new settings to take effect.
+
+## Tab system
+
+LInjector's tab system has no explicit runtime limit on the number of tabs. It is engineered to stay under 1 GB of RAM with 40 or more tabs open simultaneously. You do not need to configure a maximum — the memory optimizations are applied automatically by design. Each tab holds its own Monaco editor instance, which is initialized lazily to avoid upfront memory allocation for tabs you are not actively using.
+
+## DLL path
+
+LInjector is a UI and IDE layer; the actual game injection is performed by an external DLL that you supply. The path to that DLL is hardcoded in the C# source. To point LInjector at your own DLL:
+
+1. Open the relevant source file that handles injection (look for the injection call in the project source).
+2. Replace the hardcoded DLL path or filename with the path to your compatible DLL.
+3. Rebuild using **Release x86**.
+
+<Tip>
+  If you are using a relative path for your DLL, place the DLL in the same directory as the compiled `LInjector.exe` so the path resolves correctly at runtime.
+</Tip>
+
+## Getting help
+
+Because all configuration is done in source code, questions about specific settings are best answered by reading the relevant source file first. If you are unsure where a particular setting lives, the author is available on the Discord server linked in the project README on GitHub.

@@ -1,0 +1,145 @@
+---
+title: "Integrating a custom injection DLL"
+description: "Learn how to bring your own DLL to LInjector, connect it to the injection layer in the C# source, and compile a working custom executor build."
+---
+
+LInjector provides the IDE shell — the window, the Monaco editor, the tab system, the inject button — but it does not include the component that actually reaches into the Roblox process and executes your Luau script. That component is a Dynamic-Link Library (DLL) that you supply yourself. This page explains what the DLL does, how to place it in the project, how to wire it into the C# source, and what to watch out for when you build.
+
+## What a DLL is in this context
+
+A Dynamic-Link Library is a compiled binary that exports functions your C# code can call at runtime. In LInjector's architecture, the DLL is responsible for:
+
+- Locating the running Roblox process
+- Attaching to that process (process injection)
+- Passing your Luau script to the Roblox runtime for execution
+
+LInjector's C# code handles everything above that layer: reading the script from Monaco, calling the DLL's exported functions with the script text, and surfacing status feedback in the UI. The DLL handles everything below: the Win32 API calls, memory writes, and execution bootstrapping that are specific to the Roblox client version you are targeting.
+
+## Why you need your own DLL
+
+LInjector does not ship a DLL because DLL binaries must be updated every time the Roblox client changes its internal layout. By separating the UI from the injection logic, LInjector lets you swap in a new DLL for a new client version without rebuilding the UI from scratch. If you already have a working DLL from another project, you can often reuse it here with minimal changes.
+
+<Note>
+  The UWP version of Roblox has been patched by Hyperion (Byfron) anti-cheat. A DLL that targets the standard Windows client will not work against the UWP build without source-level modifications. You need a DLL that targets a compatible injection path for the current client.
+</Note>
+
+## Prerequisites
+
+Before you begin:
+
+- A working injection DLL targeting the current Roblox Windows client
+- A successful **Release x86** build of LInjector (see [Building from source](/building-from-source))
+- Visual Studio 2022 with the **.NET desktop development** workload
+
+<Warning>
+  Your DLL must be compiled as 32-bit (x86). LInjector's build target is **Release x86**, and a 64-bit DLL cannot be loaded into a 32-bit process. If you link a 64-bit DLL, the application will throw a `BadImageFormatException` at runtime and injection will fail.
+</Warning>
+
+## Adding your DLL to the project
+
+<Steps>
+  <Step title="Place the DLL in the project directory">
+    Copy your DLL binary into the root of the cloned repository, alongside `LInjector.sln`. You can name it anything, but using a short, descriptive name (for example, `injection.dll`) makes the source changes easier to read.
+  </Step>
+  <Step title="Add the DLL as a project reference or copy target">
+    You have two options depending on how the DLL exposes its functions:
+
+    - **P/Invoke (native DLL):** No reference is needed in the project file. You declare the DLL's exported functions directly in C# using `[DllImport]`.
+    - **Managed DLL:** Right-click the project in **Solution Explorer → Add → Reference**, browse to your DLL, and add it. You can then call its types directly.
+
+    Most injection DLLs are native and use P/Invoke.
+  </Step>
+  <Step title="Ensure the DLL is copied to the output directory">
+    In **Solution Explorer**, select your DLL file, open the **Properties** panel (`F4`), and set **Copy to Output Directory** to **Copy if newer**. This ensures the DLL ends up in `bin\Release\` alongside `LInjector.exe` when you build.
+  </Step>
+  <Step title="Locate the injection call site in the C# source">
+    Open the source file that handles the **Inject** button click. Search for comments or method names related to injection — look for `Inject`, `Execute`, or `Run` in the event handler connected to the inject button. This is where you will call your DLL.
+  </Step>
+  <Step title="Declare the DLL import">
+    At the top of the relevant class file, declare the exported functions you need from your DLL using `[DllImport]`:
+
+    ```csharp
+    using System.Runtime.InteropServices;
+
+    // Declare the exported functions from your injection DLL.
+    // Adjust the function names and signatures to match your DLL's exports.
+    [DllImport("injection.dll", CallingConvention = CallingConvention.Cdecl)]
+    private static extern bool InjectDLL();
+
+    [DllImport("injection.dll", CallingConvention = CallingConvention.Cdecl,
+        CharSet = CharSet.Ansi)]
+    private static extern void ExecuteScript([MarshalAs(UnmanagedType.LPStr)] string script);
+    ```
+  </Step>
+  <Step title="Call the DLL at the injection site">
+    Inside the inject button's event handler, call your declared functions. A typical pattern reads the script text from Monaco first, then passes it to the DLL:
+
+    ```csharp
+    private void InjectButton_Click(object sender, EventArgs e)
+    {
+        // Read the current script text from the Monaco editor.
+        string script = webView.ExecuteScriptAsync("editor.getValue()").Result;
+        // Remove surrounding quotes added by the JS engine.
+        script = script.Trim('"');
+
+        // Attach to the Roblox process, then execute the script.
+        if (InjectDLL())
+        {
+            ExecuteScript(script);
+        }
+        else
+        {
+            MessageBox.Show("Injection failed. Make sure Roblox is running.");
+        }
+    }
+    ```
+
+    Adjust the function names, calling conventions, and argument types to match your DLL's actual exported interface.
+  </Step>
+  <Step title="Rebuild as Release x86">
+    Press `Ctrl+Shift+B` or go to **Build → Build Solution**. Confirm the build configuration is set to **Release** and **x86** before building. The compiled binary and your DLL will both appear in `bin\Release\`.
+  </Step>
+</Steps>
+
+## Integration pattern reference
+
+The table below summarizes the roles of each part of the integration:
+
+| Layer | Responsibility |
+|---|---|
+| Monaco editor | Holds the Luau script text the user has typed |
+| C# event handler | Reads script text from Monaco, calls DLL exports |
+| DLL (`InjectDLL`) | Attaches to the Roblox process |
+| DLL (`ExecuteScript`) | Passes the Luau script to the Roblox runtime |
+
+## Common issues
+
+<AccordionGroup>
+  <Accordion title="BadImageFormatException at runtime">
+    The DLL you are loading is 64-bit. Recompile it targeting x86, or obtain an x86 build from the DLL's author.
+  </Accordion>
+  <Accordion title="DllNotFoundException">
+    The DLL binary is not in the same directory as `LInjector.exe`. Check that **Copy to Output Directory** is set to **Copy if newer** in the DLL file's properties, and rebuild.
+  </Accordion>
+  <Accordion title="EntryPointNotFoundException">
+    The function name in your `[DllImport]` declaration does not match the export name in the DLL. Use a tool like `dumpbin /exports injection.dll` from a Visual Studio Developer Command Prompt to list the exact export names.
+  </Accordion>
+  <Accordion title="Injection fails silently">
+    Your DLL may require elevated privileges. Run `LInjector.exe` as Administrator, or add a manifest to the project that requests elevated execution automatically.
+  </Accordion>
+</AccordionGroup>
+
+## Getting help
+
+The LInjector author is available on Discord for questions about DLL integration. If you are stuck on a specific compatibility issue, the Discord community is the fastest path to a working integration.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Architecture overview" icon="sitemap" href="/development/architecture">
+    See how the DLL injection layer fits into the broader component model.
+  </Card>
+  <Card title="Customizing the UI" icon="paintbrush" href="/development/customizing-ui">
+    Modify the inject button and surrounding controls to match your branding.
+  </Card>
+</CardGroup>

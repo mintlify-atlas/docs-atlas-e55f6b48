@@ -1,0 +1,71 @@
+---
+title: "Script tabs: managing multiple scripts"
+description: "LInjector's tab system lets you keep 40 or more Luau scripts open at once while staying under 1 GB of RAM — open, rename, save, and switch tabs instantly."
+---
+
+LInjector's tab system lets you keep multiple scripts open at once, each in its own isolated editor instance. Rather than copying scripts in and out of a single text area, you can maintain a library of open scripts across tabs and switch between them instantly. The tab system is engineered to stay under 1 GB of RAM even when you have 40 or more tabs open simultaneously, so you can work with a large collection of scripts without worrying about memory pressure on your machine.
+
+## How tabs work
+
+Each tab holds its own independent Monaco editor instance with its own content, cursor position, and undo history. Switching tabs is instant — the editor simply swaps the active buffer. All open tabs are kept in memory for as long as they remain open, which is what makes the 1 GB memory target meaningful: LInjector does not offload idle tabs to disk and then reload them; they stay loaded and ready.
+
+<Note>
+LInjector's tab system is explicitly optimized to use no more than 1 GB of RAM with 40 or more tabs open. This is a core design goal of the project, not an accidental property, and it distinguishes LInjector from executor interfaces that become sluggish when many scripts are loaded simultaneously.
+</Note>
+
+## Managing tabs
+
+### Opening a new tab
+
+Click **New Tab** in the tab bar to open a blank editor. The new tab becomes active immediately and is ready for you to start typing or pasting a script.
+
+### Renaming a tab
+
+By default, new tabs are given a generic name. To rename a tab so it reflects the script it contains, double-click the tab label and type the new name, then press **Enter** to confirm.
+
+### Closing a tab
+
+Click the **×** icon on the tab to close it. Closing a tab discards its contents from memory; if the script has not been saved to disk, the content is lost. Save scripts you want to keep before closing their tabs.
+
+<Steps>
+  <Step title="Open a new tab">
+    Click **New Tab** in the tab bar. A blank editor opens and becomes active.
+  </Step>
+  <Step title="Write or paste your script">
+    Type your Luau script directly, or paste it from the clipboard with **Ctrl+V**.
+  </Step>
+  <Step title="Rename the tab (optional)">
+    Double-click the tab label and enter a descriptive name, such as `movement-utils` or `player-tools`.
+  </Step>
+  <Step title="Save the script">
+    Use **File → Save** or the save keyboard shortcut to write the script to disk so it persists across sessions.
+  </Step>
+  <Step title="Switch between tabs">
+    Click any tab in the tab bar to switch to it. Your cursor position and undo history in each tab are preserved independently.
+  </Step>
+</Steps>
+
+## Workflow tips
+
+<Tip>
+Organize tabs by purpose rather than keeping a single large script. For example, keep a tab for utility functions you reuse, a separate tab for the script you are actively developing, and a tab for quick one-off tests. Named tabs make it obvious at a glance what each one contains.
+</Tip>
+
+A practical approach that works well:
+
+- **Utility tab** — reusable helper functions you copy into other scripts (e.g. a `getCharacter()` wrapper)
+- **Active development tab** — the script you are currently writing and refining
+- **Scratch tab** — a throwaway space to test small snippets before integrating them
+- **Per-game tabs** — one tab per Roblox game or exploit target, named after the game
+
+<AccordionGroup>
+  <Accordion title="How many tabs can I open?">
+    LInjector is tested and optimized for 40 or more simultaneous tabs while remaining under 1 GB of RAM. In practice, you are unlikely to need more than a few dozen tabs in a normal scripting session.
+  </Accordion>
+  <Accordion title="Do tabs persist after I close LInjector?">
+    Tabs and their contents are held in memory during the session. To keep a script across sessions, save it to a file from the **File** menu. LInjector can reload saved scripts on next launch if you open the files again.
+  </Accordion>
+  <Accordion title="Can I reorder tabs?">
+    Tab reordering behavior depends on the version of LInjector you are running. Check the tab bar for drag-and-drop support; if it is not available in your build, renaming tabs clearly is the next best way to keep them organized.
+  </Accordion>
+</AccordionGroup>

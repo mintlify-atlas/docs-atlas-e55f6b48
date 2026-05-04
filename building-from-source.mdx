@@ -1,0 +1,78 @@
+---
+title: "Build LInjector from source"
+description: "Step-by-step guide to cloning LInjector, opening LInjector.sln in Visual Studio 2022, setting Release x86, and compiling a working binary for Windows."
+---
+
+Building LInjector from source gives you a binary you compiled yourself from auditable code, and it is the only way to customize the injection logic, modify the UI, or swap in a different DLL integration. The build process is straightforward: clone the repository, open the solution in Visual Studio 2022, set the correct build target, and compile.
+
+## Prerequisites
+
+You need the following before you begin:
+
+- **Git** — to clone the repository ([git-scm.com](https://git-scm.com))
+- **Visual Studio 2022** — with the **.NET desktop development** workload installed
+- **.NET Framework 4.8** — included in the .NET desktop development workload
+- **Windows** — LInjector is a Windows Forms application and cannot be compiled or run on other platforms
+
+<Warning>
+  Do not open or edit any Windows Forms (`.Designer.cs` or the form designer view) before you compile the solution at least once. Forms cannot load correctly without a prior compilation, and attempting to open them first will put Visual Studio into a broken state. If this happens, close Visual Studio, then reopen it — your changes will be intact and the designer will load correctly after you build.
+</Warning>
+
+## Build steps
+
+<Steps>
+  <Step title="Clone the repository">
+    Open a terminal and clone the LInjector repository to your local machine:
+
+    ```bash
+    git clone https://github.com/WeritoP/LInjector-FORKED-.git
+    cd LInjector-FORKED-
+    ```
+  </Step>
+  <Step title="Open the solution in Visual Studio 2022">
+    Double-click `LInjector.sln` in the cloned directory, or open it from within Visual Studio 2022 via **File → Open → Project/Solution**.
+
+    Wait for Visual Studio to finish loading the solution and restoring any dependencies before proceeding.
+  </Step>
+  <Step title="Set the build configuration to Release x86">
+    In the toolbar at the top of Visual Studio, locate the two dropdowns showing the build configuration and platform. Set them to:
+
+    - Configuration: **Release**
+    - Platform: **x86**
+
+    LInjector targets .NET Framework 4.8 at 32-bit, so the **x86** platform target is required. Building as **x64** or **Any CPU** will not produce a working binary.
+  </Step>
+  <Step title="Build the solution">
+    Press `Ctrl+Shift+B` or go to **Build → Build Solution**. Visual Studio compiles the project and reports any errors in the **Output** and **Error List** panels at the bottom of the screen.
+
+    A successful build produces output similar to:
+
+    ```text
+    ========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
+    ```
+  </Step>
+  <Step title="Find the compiled binary">
+    After a successful build, the compiled executable is placed in:
+
+    ```text
+    LInjector-FORKED-\bin\Release\LInjector.exe
+    ```
+
+    Navigate to that folder and run `LInjector.exe` to verify the build works correctly.
+  </Step>
+</Steps>
+
+## Editing Windows Forms
+
+If you want to modify the application's UI forms after your first successful build, open the form files normally through the **Solution Explorer**. Because you have already compiled once, the designer will load without issues. If Visual Studio was opened and a form was accessed before any compilation, restart Visual Studio and build first before re-opening the designer.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="DLL integration" icon="plug" href="/development/dll-integration">
+    Connect your own injection DLL to the compiled LInjector build.
+  </Card>
+  <Card title="Architecture overview" icon="sitemap" href="/development/architecture">
+    Understand how LInjector's components fit together before making changes.
+  </Card>
+</CardGroup>

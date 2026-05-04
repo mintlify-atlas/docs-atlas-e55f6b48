@@ -1,23 +1,11 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "name": "LInjector",
+  "projectType": "general",
+  "projectName": "LInjector",
+  "projectDescription": "An open-source Luau/Lua Script IDE and executor for Roblox, built as a Windows Forms application in C# with Monaco editor integration.",
   "theme": "aspen",
-  "colors": {
-    "primary": "#5B6CF6",
-    "light": "#7B89F8",
-    "dark": "#3A4BD4"
-  },
-  "navbar": {
-    "primary": {
-      "type": "github",
-      "href": "https://github.com/WeritoP/LInjector-FORKED-"
-    }
-  },
-  "footer": {
-    "socials": {
-      "github": "https://github.com/WeritoP/LInjector-FORKED-"
-    }
-  },
+  "primaryColor": "#5B6CF6",
+  "lightColor": "#7B89F8",
+  "darkColor": "#3A4BD4",
   "navigation": {
     "tabs": [
       {
@@ -60,5 +48,20 @@
         ]
       }
     ]
-  }
+  },
+  "keyFeatures": [
+    "Monaco editor integration (same as VS Code) with Luau syntax highlighting",
+    "Fast injection speed (~300ms / 0.3 seconds)",
+    "Optimized tab system supporting 40+ tabs under 1GB RAM",
+    "Open-source C# Windows Forms application (.NET Framework 4.8, 32-bit)",
+    "Easily customizable and extensible with your own DLL",
+    "Transparency and open development philosophy"
+  ],
+  "publicApiSurface": [
+    "LInjector.sln — Visual Studio 2022 solution file",
+    "Windows Forms UI (forms require compilation before editing)",
+    "DLL integration point for custom injection libraries",
+    "Monaco editor (via Krnl/Depso integration) for Luau scripting",
+    "Release x86 build target"
+  ]
 }

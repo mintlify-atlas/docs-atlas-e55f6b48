@@ -1,0 +1,82 @@
+---
+title: "Monaco editor: write Luau scripts in LInjector"
+description: "LInjector embeds Monaco — the VS Code editor engine — with Luau syntax highlighting, autocomplete, multi-cursor editing, and customizable themes for scripting."
+---
+
+LInjector uses the Monaco editor as its built-in code editor, giving you a professional scripting environment directly inside the application. Monaco is the same editor engine that powers Visual Studio Code, so if you have ever written code in VS Code, the experience will feel immediately familiar. This means you get full syntax highlighting for Luau, IntelliSense-style autocomplete, multi-cursor editing, and all the other quality-of-life features that make writing scripts fast and comfortable.
+
+## What is the Monaco editor?
+
+Monaco is Microsoft's open-source code editor component, used at the core of Visual Studio Code. By embedding Monaco, LInjector avoids building a custom text editor from scratch and instead gives you a battle-tested, feature-rich editing surface that millions of developers rely on daily. The result is an executor interface that feels less like a niche tool and more like a real development environment.
+
+The Luau syntax highlighting grammar used in LInjector was originally developed by [Krnl](https://krnl.place/) and subsequently edited by [Depso](https://github.com/depthso) to refine how Luau-specific constructs are tokenized and colored.
+
+## Editor features
+
+<Columns cols={2}>
+  <Card title="Syntax highlighting" icon="paintbrush">
+    Luau keywords, built-in globals, strings, comments, and operators are each colored distinctly, making scripts easier to read at a glance.
+  </Card>
+  <Card title="Autocomplete / IntelliSense" icon="wand-magic-sparkles">
+    The editor suggests completions as you type. Start typing a Roblox global like `game` or a Lua standard library function and Monaco will offer matching completions inline.
+  </Card>
+  <Card title="Code folding" icon="chevrons-up-down">
+    Collapse `do...end` blocks, functions, and tables to hide detail you are not currently working on, keeping long scripts manageable.
+  </Card>
+  <Card title="Find and replace" icon="magnifying-glass">
+    Press **Ctrl+F** to open the find bar. Press **Ctrl+H** to open find-and-replace. Both support plain text and regular expressions.
+  </Card>
+  <Card title="Multi-cursor editing" icon="i-cursor">
+    Hold **Alt** and click to place additional cursors, or use **Ctrl+D** to select the next occurrence of the current word. Edit multiple locations simultaneously.
+  </Card>
+  <Card title="Undo / redo history" icon="clock-rotate-left">
+    Full undo and redo history is maintained per-tab for the duration of the session. Use **Ctrl+Z** and **Ctrl+Y** as you would in any editor.
+  </Card>
+</Columns>
+
+## Keyboard shortcuts
+
+These shortcuts work inside the Monaco editor in LInjector:
+
+| Action | Shortcut |
+|---|---|
+| Undo | **Ctrl+Z** |
+| Redo | **Ctrl+Y** |
+| Find | **Ctrl+F** |
+| Find and replace | **Ctrl+H** |
+| Toggle line comment | **Ctrl+/** |
+| Select all | **Ctrl+A** |
+| Copy line down | **Alt+Shift+↓** |
+| Add cursor below | **Ctrl+Alt+↓** |
+| Select next occurrence | **Ctrl+D** |
+| Go to line | **Ctrl+G** |
+
+## Writing a Luau script
+
+Below is a simple example that demonstrates how a well-formatted Luau script looks in the editor. The highlighting will color keywords like `local` and `for`, distinguish string literals from variable names, and dim comments to keep them visually separate from code.
+
+```lua
+-- Move the local player's character to a new position
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Teleport the character 50 studs forward
+local currentPosition = humanoidRootPart.CFrame
+humanoidRootPart.CFrame = currentPosition + Vector3.new(0, 0, -50)
+
+print("Teleport complete for: " .. player.Name)
+```
+
+<Tip>
+The Monaco editor in LInjector behaves just like VS Code. If you are comfortable in VS Code, you already know how to navigate, select, and edit scripts here. Keyboard muscle memory transfers directly.
+</Tip>
+
+## Autocomplete in practice
+
+When you type `game:GetService("`, the editor will suggest known Roblox service names. When you access a variable like `humanoidRootPart.`, it attempts to suggest properties and methods based on known Luau types. While the autocomplete is not a full Roblox LSP server, it significantly reduces typos and speeds up writing repetitive boilerplate.
+
+## Themes and appearance
+
+Monaco supports multiple color themes. LInjector applies a default dark theme suited to long scripting sessions. If the project's source has been customized with a different theme configuration, it will be reflected automatically when you build and run LInjector from source.

@@ -1,0 +1,200 @@
+---
+title: "Customizing the Monaco editor integration"
+description: "Explore how LInjector embeds and configures Monaco, including Luau syntax highlighting from the Krnl/Depso integration, theme customization, and editor options."
+---
+
+LInjector uses the Monaco editor — the same editor engine that powers Visual Studio Code — to give you a full IDE experience for writing Luau scripts. Monaco runs inside a browser control embedded in the Windows Forms shell, and its behavior is configured through JavaScript at initialization time. Because all editor options, themes, language registrations, and completions are controlled in JavaScript, you can customize them without touching the C# layer at all.
+
+## How Monaco is embedded
+
+The Windows Forms main form hosts a WebView (browser control). At startup, the WebView loads a local HTML host page that:
+
+1. Loads the Monaco JS runtime from the bundled editor assets
+2. Applies the Luau language definition sourced from Krnl's Monaco integration, edited by Depso
+3. Calls `monaco.editor.create()` with the initial configuration options
+4. Exposes a JavaScript interface that the C# layer can call to read and write editor content
+
+The C# layer communicates with Monaco exclusively through `ExecuteScript` / `ExecuteScriptAsync` calls against the WebView control — there is no direct binding between C# objects and Monaco internals. This keeps the boundary clean: the C# code treats Monaco as a black box that stores text and fires events.
+
+## Luau syntax highlighting
+
+Luau syntax highlighting is provided by the Krnl Monaco integration, edited and maintained by Depso. This integration registers a custom Monaco language called `luau` (distinct from the built-in `lua` language) with:
+
+- Luau-specific keywords (`task`, `typeof`, `continue`, type annotations)
+- Roblox service and class names as recognized symbols
+- Luau string interpolation syntax
+- Comment patterns for `--` and `--[[...]]`
+
+The language definition lives in the JavaScript host page or in a bundled script file loaded by that page. You can extend or modify the tokenizer rules directly in that file.
+
+## Editor initialization options
+
+The Monaco editor is created with a configuration object passed to `monaco.editor.create()`. Below is an example showing the options LInjector sets by default, along with the ones most commonly customized:
+
+```javascript
+const editor = monaco.editor.create(document.getElementById("editor"), {
+  value: "",
+  language: "luau",
+  theme: "vs-dark",          // built-in: "vs", "vs-dark", "hc-black"
+  fontSize: 14,
+  tabSize: 4,
+  insertSpaces: true,
+  minimap: { enabled: false },
+  lineNumbers: "on",          // "on" | "off" | "relative"
+  wordWrap: "off",
+  scrollBeyondLastLine: false,
+  automaticLayout: true,      // resize when the container resizes
+  fontFamily: "Consolas, 'Courier New', monospace",
+});
+```
+
+Change any of these values in the initialization script to apply them globally. Changes take effect the next time the host page is loaded (i.e., the next time you launch LInjector).
+
+## Changing the editor theme
+
+Monaco ships with three built-in themes: `vs` (light), `vs-dark` (dark), and `hc-black` (high-contrast). You can switch the active theme at any point by calling:
+
+```javascript
+monaco.editor.setTheme("vs");
+```
+
+To define a custom theme, use `monaco.editor.defineTheme()` before the `create()` call:
+
+```javascript
+monaco.editor.defineTheme("linjector-dark", {
+  base: "vs-dark",            // inherit from a built-in base
+  inherit: true,
+  rules: [
+    { token: "keyword",   foreground: "569CD6", fontStyle: "bold" },
+    { token: "string",    foreground: "CE9178" },
+    { token: "comment",   foreground: "6A9955", fontStyle: "italic" },
+    { token: "number",    foreground: "B5CEA8" },
+  ],
+  colors: {
+    "editor.background":           "#1A1A2E",
+    "editor.foreground":           "#D4D4D4",
+    "editorLineNumber.foreground": "#858585",
+    "editor.selectionBackground":  "#264F78",
+  },
+});
+
+monaco.editor.setTheme("linjector-dark");
+```
+
+Add this block to the host page's initialization script, before the `monaco.editor.create()` call.
+
+<Tip>
+  The `base` field in `defineTheme` must be one of `"vs"`, `"vs-dark"`, or `"hc-black"`. Setting `inherit: true` means only the rules and colors you specify will override the base — everything else falls through to the inherited theme.
+</Tip>
+
+## Changing font size and other options at runtime
+
+You can update editor options after initialization using `editor.updateOptions()`. This is useful if you want to expose a settings panel in the UI that adjusts editor behavior without reloading:
+
+```javascript
+// Call this from C# via ExecuteScriptAsync, or from a settings panel JS handler.
+editor.updateOptions({
+  fontSize: 16,
+  tabSize: 2,
+  minimap: { enabled: true },
+  lineNumbers: "relative",
+});
+```
+
+From C# you would call this as:
+
+```csharp
+await webView.ExecuteScriptAsync(
+    "editor.updateOptions({ fontSize: 16, minimap: { enabled: true } });"
+);
+```
+
+## Adding custom Luau completions and snippets
+
+Monaco's completion API lets you register custom completion items for the `luau` language. Add a provider in the initialization script to surface Roblox-specific globals, your own utility functions, or common patterns as autocomplete suggestions:
+
+```javascript
+monaco.languages.registerCompletionItemProvider("luau", {
+  provideCompletionItems: function (model, position) {
+    const suggestions = [
+      {
+        label: "game:GetService",
+        kind: monaco.languages.CompletionItemKind.Function,
+        insertText: 'game:GetService("${1:ServiceName}")',
+        insertTextRules:
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        documentation: "Returns a Roblox service by name.",
+      },
+      {
+        label: "task.wait",
+        kind: monaco.languages.CompletionItemKind.Function,
+        insertText: "task.wait(${1:seconds})",
+        insertTextRules:
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        documentation: "Yields the current thread for the specified duration.",
+      },
+      {
+        label: "pcall snippet",
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        insertText: [
+          "local ok, err = pcall(function()",
+          "\t${1:-- body}",
+          "end)",
+          "if not ok then",
+          "\twarn(err)",
+          "end",
+        ].join("\n"),
+        insertTextRules:
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        documentation: "Protected call with error handling.",
+      },
+    ];
+    return { suggestions };
+  },
+});
+```
+
+<Tip>
+  Use `CompletionItemKind.Snippet` for multi-line templates and `CompletionItemKind.Function` for single-line call completions. Snippet placeholders use the `${1:placeholder}` syntax — `$0` marks the final cursor position after all placeholders are filled.
+</Tip>
+
+## Quick reference: common customizations
+
+<AccordionGroup>
+  <Accordion title="Disable the minimap">
+    ```javascript
+    editor.updateOptions({ minimap: { enabled: false } });
+    ```
+  </Accordion>
+  <Accordion title="Enable word wrap">
+    ```javascript
+    editor.updateOptions({ wordWrap: "on" });
+    ```
+  </Accordion>
+  <Accordion title="Change tab size to 2 spaces">
+    ```javascript
+    editor.updateOptions({ tabSize: 2, insertSpaces: true });
+    ```
+  </Accordion>
+  <Accordion title="Hide line numbers">
+    ```javascript
+    editor.updateOptions({ lineNumbers: "off" });
+    ```
+  </Accordion>
+  <Accordion title="Switch to light theme">
+    ```javascript
+    monaco.editor.setTheme("vs");
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Customizing the UI" icon="paintbrush" href="/development/customizing-ui">
+    Change the surrounding Windows Forms shell — colors, layout, and branding.
+  </Card>
+  <Card title="Architecture overview" icon="sitemap" href="/development/architecture">
+    See how the Monaco layer fits into the broader component model.
+  </Card>
+</CardGroup>
